@@ -37,7 +37,11 @@ const config = {
 // - setting
 
 // + plugin options
-const iPluginOption = {}
+const iPluginOption = {
+  fileMap: {
+    './src/source': path.join(config.alias.jsDest, '../source')
+  }
+}
 // - plugin options
 
 const wConfig = {
