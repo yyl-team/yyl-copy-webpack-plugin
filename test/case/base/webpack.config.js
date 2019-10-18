@@ -37,11 +37,17 @@ const config = {
 // - setting
 
 // + plugin options
-const iPluginOption = {
-  fileMap: {
-    './src/source': path.join(config.alias.jsDest, '../source')
-  }
-}
+const iPluginOption = [{
+  from: 'src/source',
+  to: 'dist/assets/source',
+  fileName: '[name].[ext]',
+  matcher: ['*.html', '!**/.*']
+}, {
+  from: 'src/source',
+  to: 'dist/assets/source',
+  fileName: '[name]-[hash:8].[ext]',
+  matcher: ['!*.html', '!**/.*']
+}]
 // - plugin options
 
 const wConfig = {

@@ -9,7 +9,9 @@
   "scripts": {
     "test": "jest ./test/jest/",
     "c-base:watch": "node ./test/commander.js watch --path ./test/case/base/",
-    "c-base:all": "node ./test/commander.js all --path ./test/case/base/"
+    "c-base:all": "node ./test/commander.js all --path ./test/case/base/",
+    "cbw": "node ./test/commander.js watch --path ./test/case/base/",
+    "cba": "node ./test/commander.js all --path ./test/case/base/"
   },
   "devDependencies": {
     "jest": "^24.9.0",
@@ -20,6 +22,8 @@
   },
   "dependencies": {
     "concat-with-sourcemaps": "1.1.0",
+    "globby": "^10.0.1",
+    "matcher": "^2.0.0",
     "uglify-es": "3.3.9"
   },
   "description": "## USAGE ```javascript ```",

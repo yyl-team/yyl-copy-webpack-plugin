@@ -1,8 +1,10 @@
 declare class IWebpackPlugin {
-  constructor(op: IWebpackPluginOptions)
+  constructor(options : ICopyOption[])
 }
-interface IWebpackPluginOptions {
-  fileMap: {[oPath: string]: string}
+interface ICopyOption {
+  from: string
+  to: string
+  matcher?: string[]
   fileName?: string
   uglify?: boolean
 }
