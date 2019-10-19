@@ -21,10 +21,9 @@
     "yyl-util": "^2.3.7"
   },
   "dependencies": {
-    "concat-with-sourcemaps": "1.1.0",
-    "globby": "^10.0.1",
     "matcher": "^2.0.0",
-    "uglify-es": "3.3.9"
+    "minify": "^4.1.3",
+    "try-to-catch": "^2.0.0"
   },
   "description": "## USAGE ```javascript ```",
   "directories": {

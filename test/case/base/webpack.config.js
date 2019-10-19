@@ -46,6 +46,7 @@ const iPluginOption = [{
   from: 'src/source',
   to: 'dist/assets/source',
   fileName: '[name]-[hash:8].[ext]',
+  minify: true,
   matcher: ['!*.html', '!**/.*']
 }]
 // - plugin options

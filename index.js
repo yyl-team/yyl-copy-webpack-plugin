@@ -4,6 +4,8 @@ const extFs = require('yyl-fs')
 const fs = require('fs')
 const matcher = require('matcher')
 const createHash = require('crypto').createHash
+const minify = require('minify')
+const tryToCatch = require('try-to-catch')
 // const UglifyJS = require('uglify-es')
 
 const PLUGIN_NAME = 'yylCopy'
@@ -29,8 +31,16 @@ class YylCopyWebpackPlugin {
     }
     return ext
   }
-  formatSource(filePath) {
-    return fs.readFileSync(filePath)
+  async formatSource(filePath, option) {
+    if (option.minify) {
+      const [err, data] = await tryToCatch(minify, filePath)
+      if (err) {
+        return fs.readFileSync(filePath)
+      }
+      return data
+    } else {
+      return fs.readFileSync(filePath)
+    }
   }
   getFileName(name, cnt, option) {
     const { fileName } = option
@@ -62,19 +72,19 @@ class YylCopyWebpackPlugin {
   apply(compiler) {
     const { output } = compiler.options
 
-    compiler.hooks.emit.tap(PLUGIN_NAME, (compilation) => {
+    compiler.hooks.emit.tapAsync(PLUGIN_NAME, async (compilation, done) => {
       // + copy
-      this.options.forEach((option) => {
+      await util.forEach(this.options, async (option) => {
         let iFiles = extFs.readFilesSync(option.from)
         if (option.matcher) {
           iFiles = matcher(iFiles, option.matcher)
         }
 
         const copyMap = {}
-        iFiles.forEach((iFile) => {
+        await util.forEach(iFiles, async (iFile) => {
           const outputPath = util.path.join(option.to, path.relative(option.from, iFile))
           const assetName = util.path.relative(output.path, outputPath)
-          const cnt = this.formatSource(iFile)
+          const cnt = await this.formatSource(iFile, option)
           const finalName = this.getFileName(assetName, cnt, option)
           copyMap[finalName] = cnt
 
@@ -93,6 +103,7 @@ class YylCopyWebpackPlugin {
         // const { fileMap } = option
       })
       // - copy
+      done()
     })
 
     // compiler.hooks.emit.tap(
