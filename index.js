@@ -8,7 +8,13 @@ const { getHooks } = require('./lib/hooks')
 const CleanCss = require('clean-css')
 const UglifyJs = require('uglify-js')
 
+
+
 const PLUGIN_NAME = 'yylCopy'
+
+const printError = function(err) {
+  throw new Error(['yyl-copy-webpack-plugin error:', err])
+}
 
 
 class YylCopyWebpackPlugin {
@@ -69,7 +75,7 @@ class YylCopyWebpackPlugin {
         case '.js':
           minifyResult = UglifyJs.minify(r.source.toString())
           if (minifyResult.error) {
-            throw minifyResult.error
+            return printError(minifyResult.error)
           }
           r.source = Buffer.from(minifyResult.code, 'utf-8')
           break
@@ -77,8 +83,9 @@ class YylCopyWebpackPlugin {
           minifyResult = new CleanCss({}).minify(r.source.toString())
           if (minifyResult.errors) {
             minifyResult.errors.forEach((error) => {
-              throw error
+              printError(error)
             })
+            return
           }
           r.source = Buffer.from(minifyResult.styles, 'utf-8')
           break
