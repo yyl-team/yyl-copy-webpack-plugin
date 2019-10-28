@@ -38,13 +38,14 @@ try {
 const PLUGIN_NAME = 'your_plugin'
 class ExtPlugin {
   apply (compiler) {
-    if (YylCopyWebpackPlugin) {
-      compiler.hooks.compilation.tap(YylCopyWebpackPlugin.getName(), (compilation) => {
-        YylCopyWebpackPlugin.getHooks(compilation).beforeCopy.tapAsync(PLUGIN_NAME, (obj, done) => {
+    const IPlugin = YylCopyWebpackPlugin
+    if (IPlugin) {
+      compiler.hooks.compilation.tap(IPlugin.getName(), (compilation) => {
+        IPlugin.getHooks(compilation).beforeCopy.tapAsync(PLUGIN_NAME, (obj, done) => {
           console.log('hooks.beforeConcat(obj, done)', 'obj:', obj)
           done(null, obj)
         })
-        YylCopyWebpackPlugin.getHooks(compilation).afterCopy.tapAsync(PLUGIN_NAME, (obj, done) => {
+        IPlugin.getHooks(compilation).afterCopy.tapAsync(PLUGIN_NAME, (obj, done) => {
           console.log('hooks.afterConcat(obj, done)', 'obj:', obj)
           done(null, obj)
         })
