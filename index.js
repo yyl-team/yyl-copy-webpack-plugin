@@ -4,17 +4,20 @@ const extFs = require('yyl-fs')
 const fs = require('fs')
 const matcher = require('matcher')
 const createHash = require('crypto').createHash
-const minify = require('minify')
-const tryToCatch = require('try-to-catch')
-// const UglifyJS = require('uglify-es')
+const { getHooks } = require('./lib/hooks')
+const CleanCss = require('clean-css')
+const UglifyJs = require('uglify-js')
 
 const PLUGIN_NAME = 'yylCopy'
-// const printError = function(msg) {
-//   throw `yyl-copy-webpack-plugin error: ${msg}`
-// }
 
 
 class YylCopyWebpackPlugin {
+  static getHooks(compilation) {
+    return getHooks(compilation)
+  }
+  static getName() {
+    return PLUGIN_NAME
+  }
   constructor(opts) {
     this.options = opts.map((opt) => Object.assign({
       fileMap: {},
@@ -30,17 +33,6 @@ class YylCopyWebpackPlugin {
       ext = `${split[split.length - 2]}.${split[split.length - 1]}`
     }
     return ext
-  }
-  async formatSource(filePath, option) {
-    if (option.minify) {
-      const [err, data] = await tryToCatch(minify, filePath)
-      if (err) {
-        return fs.readFileSync(filePath)
-      }
-      return data
-    } else {
-      return fs.readFileSync(filePath)
-    }
   }
   getFileName(name, cnt, option) {
     const { fileName } = option
@@ -69,24 +61,75 @@ class YylCopyWebpackPlugin {
 
     return util.path.join(dirname, r)
   }
+  formatSource(fileInfo, option) {
+    if (option.minify) {
+      const r = Object.assign({}, fileInfo)
+      let minifyResult
+      switch (path.extname(fileInfo.src)) {
+        case '.js':
+          minifyResult = UglifyJs.minify(r.source.toString())
+          if (minifyResult.error) {
+            throw minifyResult.error
+          }
+          r.source = Buffer.from(minifyResult.code, 'utf-8')
+          break
+        case '.css':
+          minifyResult = new CleanCss({}).minify(r.source.toString())
+          if (minifyResult.errors) {
+            minifyResult.errors.forEach((error) => {
+              throw error
+            })
+          }
+          r.source = Buffer.from(minifyResult.styles, 'utf-8')
+          break
+        default:
+          break
+      }
+      return r
+    } else {
+      return fileInfo
+    }
+  }
   apply(compiler) {
-    const { output } = compiler.options
+    const { output, context } = compiler.options
 
     compiler.hooks.emit.tapAsync(PLUGIN_NAME, async (compilation, done) => {
       // + copy
+      const iHooks = getHooks(compilation)
       await util.forEach(this.options, async (option) => {
-        let iFiles = extFs.readFilesSync(option.from)
+        let iFiles = extFs.readFilesSync(path.resolve(context, option.from))
         if (option.matcher) {
           iFiles = matcher(iFiles, option.matcher)
         }
 
         const copyMap = {}
         await util.forEach(iFiles, async (iFile) => {
-          const outputPath = util.path.join(option.to, path.relative(option.from, iFile))
+          const outputPath = util.path.join(
+            path.resolve(context, option.to),
+            path.relative(option.from, iFile)
+          )
           const assetName = util.path.relative(output.path, outputPath)
-          const cnt = await this.formatSource(iFile, option)
-          const finalName = this.getFileName(assetName, cnt, option)
-          copyMap[finalName] = cnt
+
+          let fileInfo = {
+            src: iFile,
+            dist: outputPath,
+            source: fs.readFileSync(iFile)
+          }
+
+          // + hooks.beforeCopy
+          fileInfo = await iHooks.beforeCopy.promise(fileInfo)
+          // - hooks.beforeCopy
+
+          fileInfo = this.formatSource(fileInfo, option)
+
+          // + hooks.afterCopy
+          fileInfo = await iHooks.afterCopy.promise(fileInfo)
+          // - hooks.afterCopy
+
+
+          const finalName = this.getFileName(assetName, fileInfo.source, option)
+          copyMap[finalName] = fileInfo.source
+
 
           compilation.assets[finalName] = {
             source() {
@@ -105,37 +148,6 @@ class YylCopyWebpackPlugin {
       // - copy
       done()
     })
-
-    // compiler.hooks.emit.tap(
-    //   PLUGIN_NAME,
-    //   (compilation) => {
-    //     // + copy
-    //     const copyMap = {}
-    //     Object.keys(fileMap).forEach((oPath) => {
-    //       const iFiles = extFs.readFilesSync(oPath)
-    //       iFiles.forEach((iFile) => {
-    //         const outputPath = util.path.join(fileMap[oPath], path.relative(oPath, iFile))
-    //         const assetName = util.path.relative(output.path, outputPath)
-    //         const cnt = this.formatSource(iFile)
-    //         const finalName = this.getFileName(assetName, cnt)
-    //         copyMap[finalName] = cnt
-
-    //         compilation.assets[finalName] = {
-    //           source() {
-    //             return copyMap[finalName]
-    //           },
-    //           size() {
-    //             return copyMap[finalName].length
-    //           }
-    //         }
-    //         compilation.hooks.moduleAsset.call({
-    //           userRequest: util.path.join(output.path, assetName)
-    //         }, util.path.join(output.path, finalName))
-    //       })
-    //     })
-    //     // - copy
-    //   }
-    // )
   }
 }
 

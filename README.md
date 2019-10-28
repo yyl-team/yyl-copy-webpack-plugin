@@ -24,5 +24,35 @@ const wConfig = {
 }
 ```
 
+## hooks
+```javascript
+let YylCopyWebpackPlugin
+try {
+  YylCopyWebpackPlugin = require('yyl-copy-webpack-plugin')
+} catch (er) {
+  if (!(e instanceof Error) || e.code !== 'MODULE_NOT_FOUND') {
+    throw e;
+  }
+}
+
+const PLUGIN_NAME = 'your_plugin'
+class ExtPlugin {
+  apply (compiler) {
+    if (YylCopyWebpackPlugin) {
+      compiler.hooks.compilation.tap(YylCopyWebpackPlugin.getName(), (compilation) => {
+        YylCopyWebpackPlugin.getHooks(compilation).beforeCopy.tapAsync(PLUGIN_NAME, (obj, done) => {
+          console.log('hooks.beforeConcat(obj, done)', 'obj:', obj)
+          done(null, obj)
+        })
+        YylCopyWebpackPlugin.getHooks(compilation).afterCopy.tapAsync(PLUGIN_NAME, (obj, done) => {
+          console.log('hooks.afterConcat(obj, done)', 'obj:', obj)
+          done(null, obj)
+        })
+      })
+    }
+  }
+}
+```
+
 ## ts
 [./index.d.ts](./index.d.ts)
