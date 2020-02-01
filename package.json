@@ -1,6 +1,6 @@
 {
   "name": "yyl-copy-webpack-plugin",
-  "version": "0.2.1",
+  "version": "0.2.2-beta2",
   "engines": {
     "node": ">= 8.0.0"
   },
@@ -18,7 +18,7 @@
     "cha": "node ./test/commander.js all --path ./test/case/hooks/"
   },
   "devDependencies": {
-    "jest": "^24.9.0",
+    "jest": "^25.1.0",
     "webpack": "^4.41.1",
     "yyl-fs": "^0.3.3",
     "yyl-os": "^0.10.2",

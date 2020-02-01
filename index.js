@@ -26,7 +26,6 @@ class YylCopyWebpackPlugin {
   }
   constructor(opts) {
     this.options = opts.map((opt) => Object.assign({
-      fileMap: {},
       fileName: '[name]-[hash:8].[ext]',
       uglify: false
     }, opt))
