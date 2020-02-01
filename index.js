@@ -80,7 +80,7 @@ class YylCopyWebpackPlugin {
           break
         case '.css':
           minifyResult = new CleanCss({}).minify(r.source.toString())
-          if (minifyResult.errors) {
+          if (minifyResult.errors && minifyResult.errors.length) {
             minifyResult.errors.forEach((error) => {
               printError(error)
             })
