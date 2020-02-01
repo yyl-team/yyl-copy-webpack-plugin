@@ -103,7 +103,16 @@ class YylCopyWebpackPlugin {
       // + copy
       const iHooks = getHooks(compilation)
       await util.forEach(this.options, async (option) => {
-        let iFiles = extFs.readFilesSync(path.resolve(context, option.from))
+        let fromPath = option.from
+        let toPath = option.to
+        if (option.basePath) {
+          fromPath = path.resolve(option.basePath, fromPath)
+          toPath = path.resolve(option.basePath, toPath)
+        }
+        fromPath = path.resolve(context, fromPath)
+        toPath = path.resolve(context, toPath)
+
+        let iFiles = extFs.readFilesSync(fromPath)
         if (option.matcher) {
           iFiles = matcher(iFiles, option.matcher)
         }
@@ -111,8 +120,8 @@ class YylCopyWebpackPlugin {
         const copyMap = {}
         await util.forEach(iFiles, async (iFile) => {
           const outputPath = util.path.join(
-            path.resolve(context, option.to),
-            path.relative(option.from, iFile)
+            toPath,
+            path.relative(fromPath, iFile)
           )
           const assetName = util.path.relative(output.path, outputPath)
 
