@@ -13,16 +13,17 @@ interface Hooks {
   }>
 }
 
-declare class IWebpackPlugin {
+declare class YylCopyWebpackPlugin {
   static getName(): string
-  static getHooks(): iHooks
-  constructor(options : ICopyOption[])
+  static getHooks(): Hooks
+  constructor(options : CopyOption[])
 }
-interface ICopyOption {
+interface CopyOption {
   from: string
   to: string
+  basePath?: string
   matcher?: string[]
   fileName?: string
   uglify?: boolean
 }
-export =IWebpackPlugin 
+export = YylCopyWebpackPlugin 

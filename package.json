@@ -1,6 +1,6 @@
 {
   "name": "yyl-copy-webpack-plugin",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "engines": {
     "node": ">= 8.0.0"
   },
@@ -8,6 +8,8 @@
   "types": "index.d.ts",
   "scripts": {
     "test": "jest ./test/jest/",
+    "test:base": "jest ./test/jest/base.test.js",
+    "test:hooks": "jest ./test/jest/hooks.test.js",
     "c-base:watch": "node ./test/commander.js watch --path ./test/case/base/",
     "c-base:all": "node ./test/commander.js all --path ./test/case/base/",
     "cbw": "node ./test/commander.js watch --path ./test/case/base/",
@@ -18,7 +20,7 @@
     "cha": "node ./test/commander.js all --path ./test/case/hooks/"
   },
   "devDependencies": {
-    "jest": "^24.9.0",
+    "jest": "^25.1.0",
     "webpack": "^4.41.1",
     "yyl-fs": "^0.3.3",
     "yyl-os": "^0.10.2",

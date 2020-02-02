@@ -26,7 +26,6 @@ class YylCopyWebpackPlugin {
   }
   constructor(opts) {
     this.options = opts.map((opt) => Object.assign({
-      fileMap: {},
       fileName: '[name]-[hash:8].[ext]',
       uglify: false
     }, opt))
@@ -81,7 +80,7 @@ class YylCopyWebpackPlugin {
           break
         case '.css':
           minifyResult = new CleanCss({}).minify(r.source.toString())
-          if (minifyResult.errors) {
+          if (minifyResult.errors && minifyResult.errors.length) {
             minifyResult.errors.forEach((error) => {
               printError(error)
             })
@@ -104,7 +103,16 @@ class YylCopyWebpackPlugin {
       // + copy
       const iHooks = getHooks(compilation)
       await util.forEach(this.options, async (option) => {
-        let iFiles = extFs.readFilesSync(path.resolve(context, option.from))
+        let fromPath = option.from
+        let toPath = option.to
+        if (option.basePath) {
+          fromPath = path.resolve(option.basePath, fromPath)
+          toPath = path.resolve(option.basePath, toPath)
+        }
+        fromPath = path.resolve(context, fromPath)
+        toPath = path.resolve(context, toPath)
+
+        let iFiles = extFs.readFilesSync(fromPath)
         if (option.matcher) {
           iFiles = matcher(iFiles, option.matcher)
         }
@@ -112,8 +120,8 @@ class YylCopyWebpackPlugin {
         const copyMap = {}
         await util.forEach(iFiles, async (iFile) => {
           const outputPath = util.path.join(
-            path.resolve(context, option.to),
-            path.relative(option.from, iFile)
+            toPath,
+            path.relative(fromPath, iFile)
           )
           const assetName = util.path.relative(output.path, outputPath)
 
@@ -147,8 +155,8 @@ class YylCopyWebpackPlugin {
             }
           }
           compilation.hooks.moduleAsset.call({
-            userRequest: util.path.join(output.path, assetName)
-          }, util.path.join(output.path, finalName))
+            userRequest: assetName
+          }, finalName)
         })
         // const { fileMap } = option
       })
