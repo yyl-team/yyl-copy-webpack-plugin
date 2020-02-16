@@ -8,7 +8,7 @@ const { getHooks } = require('./lib/hooks')
 const CleanCss = require('clean-css')
 const UglifyJs = require('uglify-js')
 
-
+const LANG = require('./lang/index')
 
 const PLUGIN_NAME = 'yylCopy'
 
@@ -102,6 +102,9 @@ class YylCopyWebpackPlugin {
     compiler.hooks.emit.tapAsync(PLUGIN_NAME, async (compilation, done) => {
       // + copy
       const iHooks = getHooks(compilation)
+      const logger = compilation.getLogger(PLUGIN_NAME)
+      logger.group(PLUGIN_NAME)
+      logger.info(LANG.COPY_INFO)
       await util.forEach(this.options, async (option) => {
         let fromPath = option.from
         let toPath = option.to
@@ -145,7 +148,7 @@ class YylCopyWebpackPlugin {
           const finalName = this.getFileName(assetName, fileInfo.source, option)
           copyMap[finalName] = fileInfo.source
 
-
+          logger.info(`${finalName} <- [${path.relative(output.path, iFile)}]`)
           compilation.assets[finalName] = {
             source() {
               return copyMap[finalName]
@@ -161,6 +164,8 @@ class YylCopyWebpackPlugin {
         // const { fileMap } = option
       })
       // - copy
+
+      logger.groupEnd()
       done()
     })
   }
