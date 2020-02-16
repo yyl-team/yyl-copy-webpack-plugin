@@ -99,6 +99,10 @@ class YylCopyWebpackPlugin {
   apply(compiler) {
     const { output, context } = compiler.options
 
+    if (!this.options || !this.options.length) {
+      return
+    }
+
     compiler.hooks.emit.tapAsync(PLUGIN_NAME, async (compilation, done) => {
       // + copy
       const iHooks = getHooks(compilation)

@@ -1,6 +1,6 @@
 {
   "name": "yyl-copy-webpack-plugin",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "engines": {
     "node": ">= 8.0.0"
   },
@@ -10,14 +10,12 @@
     "test": "jest ./test/jest/",
     "test:base": "jest ./test/jest/base.test.js",
     "test:hooks": "jest ./test/jest/hooks.test.js",
-    "c-base:watch": "node ./test/commander.js watch --path ./test/case/base/",
-    "c-base:all": "node ./test/commander.js all --path ./test/case/base/",
     "cbw": "node ./test/commander.js watch --path ./test/case/base/",
     "cba": "node ./test/commander.js all --path ./test/case/base/",
-    "c-hooks:watch": "node ./test/commander.js watch --path ./test/case/hooks/",
-    "c-hooks:all": "node ./test/commander.js all --path ./test/case/hooks/",
     "chw": "node ./test/commander.js watch --path ./test/case/hooks/",
-    "cha": "node ./test/commander.js all --path ./test/case/hooks/"
+    "cha": "node ./test/commander.js all --path ./test/case/hooks/",
+    "cnw": "node ./test/commander.js watch --path ./test/case/none/",
+    "cna": "node ./test/commander.js all --path ./test/case/none/"
   },
   "devDependencies": {
     "jest": "^25.1.0",
