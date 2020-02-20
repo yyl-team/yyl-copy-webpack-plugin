@@ -37,18 +37,21 @@ const config = {
 // - setting
 
 // + plugin options
-const iPluginOption = [{
-  from: 'src/source',
-  to: 'dist/assets/source',
-  fileName: '[name].[ext]',
-  matcher: ['*.html', '!**/.*']
-}, {
-  from: 'src/source',
-  to: 'dist/assets/source',
-  fileName: '[name]-[hash:8].[ext]',
+const iPluginOption = {
+  files: [{
+    from: 'src/source',
+    to: 'dist/assets/source',
+    matcher: ['*.html', '!**/.*']
+  }, {
+    from: 'src/source',
+    to: 'dist/assets/source',
+    matcher: ['!*.html', '!**/.*']
+  }],
+  filename: '[name]-[hash:8].[ext]',
   minify: true,
-  matcher: ['!*.html', '!**/.*']
-}]
+  logBasePath: __dirname,
+  basePath: __dirname
+}
 // - plugin options
 
 const wConfig = {

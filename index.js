@@ -24,11 +24,13 @@ class YylCopyWebpackPlugin {
   static getName() {
     return PLUGIN_NAME
   }
-  constructor(opts) {
-    this.options = opts.map((opt) => Object.assign({
-      fileName: '[name]-[hash:8].[ext]',
-      uglify: false
-    }, opt))
+  constructor(op) {
+    this.option = Object.assign({
+      files: [],
+      filename: '[name]-[hash:8].[ext]',
+      minify: false,
+      logBasePath: process.cwd()
+    }, op)
   }
   getFileType(str) {
     str = str.replace(/\?.*/, '')
@@ -39,8 +41,8 @@ class YylCopyWebpackPlugin {
     }
     return ext
   }
-  getFileName(name, cnt, option) {
-    const { fileName } = option
+  getFileName(name, cnt) {
+    const { filename } = this.option
 
     const REG_HASH = /\[hash:(\d+)\]/g
     const REG_NAME = /\[name\]/g
@@ -52,22 +54,24 @@ class YylCopyWebpackPlugin {
     const iName = basename.slice(0, basename.length - (ext.length > 0 ? ext.length + 1 : 0))
 
     let hash = ''
-    if (fileName.match(REG_HASH)) {
+    if (filename.match(REG_HASH)) {
       let hashLen = 0
-      fileName.replace(REG_HASH, (str, $1) => {
+      filename.replace(REG_HASH, (str, $1) => {
         hashLen = +$1
         hash = createHash('md5').update(cnt.toString()).digest('hex').slice(0, hashLen)
       })
     }
-    const r = fileName
+    const r = filename
       .replace(REG_HASH, hash)
       .replace(REG_NAME, iName)
       .replace(REG_EXT, ext)
 
     return util.path.join(dirname, r)
   }
-  formatSource(fileInfo, option) {
-    if (option.minify) {
+  formatSource(fileInfo) {
+    const { minify } = this.option
+
+    if (minify) {
       const r = Object.assign({}, fileInfo)
       let minifyResult
       switch (path.extname(fileInfo.src)) {
@@ -98,8 +102,9 @@ class YylCopyWebpackPlugin {
   }
   apply(compiler) {
     const { output, context } = compiler.options
+    const { basePath, logBasePath, files } = this.option
 
-    if (!this.options || !this.options.length) {
+    if (!files || !files.length) {
       return
     }
 
@@ -109,19 +114,19 @@ class YylCopyWebpackPlugin {
       const logger = compilation.getLogger(PLUGIN_NAME)
       logger.group(PLUGIN_NAME)
       logger.info(LANG.COPY_INFO)
-      await util.forEach(this.options, async (option) => {
-        let fromPath = option.from
-        let toPath = option.to
-        if (option.basePath) {
-          fromPath = path.resolve(option.basePath, fromPath)
-          toPath = path.resolve(option.basePath, toPath)
+      await util.forEach(files, async (copyInfo) => {
+        let fromPath = copyInfo.from
+        let toPath = copyInfo.to
+        if (basePath) {
+          fromPath = path.resolve(basePath, fromPath)
+          toPath = path.resolve(basePath, toPath)
         }
         fromPath = path.resolve(context, fromPath)
         toPath = path.resolve(context, toPath)
 
         let iFiles = extFs.readFilesSync(fromPath)
-        if (option.matcher) {
-          iFiles = matcher(iFiles, option.matcher)
+        if (copyInfo.matcher) {
+          iFiles = matcher(iFiles, copyInfo.matcher)
         }
 
         const copyMap = {}
@@ -142,17 +147,17 @@ class YylCopyWebpackPlugin {
           fileInfo = await iHooks.beforeCopy.promise(fileInfo)
           // - hooks.beforeCopy
 
-          fileInfo = this.formatSource(fileInfo, option)
+          fileInfo = this.formatSource(fileInfo)
 
           // + hooks.afterCopy
           fileInfo = await iHooks.afterCopy.promise(fileInfo)
           // - hooks.afterCopy
 
 
-          const finalName = this.getFileName(assetName, fileInfo.source, option)
+          const finalName = this.getFileName(assetName, fileInfo.source)
           copyMap[finalName] = fileInfo.source
 
-          logger.info(`${finalName} <- [${path.relative(output.path, iFile)}]`)
+          logger.info(`${finalName} <- [${path.relative(logBasePath, iFile)}]`)
           compilation.assets[finalName] = {
             source() {
               return copyMap[finalName]
@@ -165,7 +170,6 @@ class YylCopyWebpackPlugin {
             userRequest: assetName
           }, finalName)
         })
-        // const { fileMap } = option
       })
       // - copy
 
