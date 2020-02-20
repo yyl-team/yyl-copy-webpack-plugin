@@ -25,8 +25,6 @@ interface YylCopyWebpackOption {
   basePath?: string
   /** 是否压缩 */
   minify?: boolean
-  /** 文件名 默认为 [name]-[hash:8].[ext] */
-  filename?: string
   /** log 路径的 相对路径 */
   logBasePath?: string
 }
@@ -38,5 +36,7 @@ interface CopyInfo {
   to: string
   /** 沿用 matcher 规则 */
   matcher?: string[]
+  /** 文件名 默认为 [name]-[hash:8].[ext] */
+  filename?: string
 }
 export = YylCopyWebpackPlugin 

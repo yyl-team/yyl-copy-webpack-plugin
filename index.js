@@ -25,12 +25,16 @@ class YylCopyWebpackPlugin {
     return PLUGIN_NAME
   }
   constructor(op) {
-    this.option = Object.assign({
-      files: [],
-      filename: '[name]-[hash:8].[ext]',
-      minify: false,
-      logBasePath: process.cwd()
-    }, op)
+    const { files, minify, logBasePath, basePath } = op
+    this.option = {
+      files: files ? files.map((info) => {
+        info.filename = info.filename || '[name]-[hash:8].[ext]'
+        return info
+      }) : [],
+      minify: minify || false,
+      basePath,
+      logBasePath: logBasePath || process.cwd()
+    }
   }
   getFileType(str) {
     str = str.replace(/\?.*/, '')
@@ -41,9 +45,7 @@ class YylCopyWebpackPlugin {
     }
     return ext
   }
-  getFileName(name, cnt) {
-    const { filename } = this.option
-
+  getFileName(name, cnt, filename) {
     const REG_HASH = /\[hash:(\d+)\]/g
     const REG_NAME = /\[name\]/g
     const REG_EXT = /\[ext\]/g
@@ -154,7 +156,7 @@ class YylCopyWebpackPlugin {
           // - hooks.afterCopy
 
 
-          const finalName = this.getFileName(assetName, fileInfo.source)
+          const finalName = this.getFileName(assetName, fileInfo.source, copyInfo.filename)
           copyMap[finalName] = fileInfo.source
 
           logger.info(`${finalName} <- [${path.relative(logBasePath, iFile)}]`)
