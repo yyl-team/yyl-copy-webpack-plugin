@@ -155,6 +155,9 @@ class YylCopyWebpackPlugin {
           fileInfo = await iHooks.afterCopy.promise(fileInfo)
           // - hooks.afterCopy
 
+          // add watch
+          compilation.fileDependencies.add(fileInfo.src)
+
 
           const finalName = this.getFileName(assetName, fileInfo.source, copyInfo.filename)
           copyMap[finalName] = fileInfo.source
