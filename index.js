@@ -114,7 +114,6 @@ class YylCopyWebpackPlugin {
     }
 
     compiler.hooks.emit.tapAsync(PLUGIN_NAME, async (compilation, done) => {
-
       /** 文件写入操作 */
       const assetsFile = async (fileInfo, filename) => {
         // + hooks.beforeCopy
