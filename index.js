@@ -165,8 +165,9 @@ class YylCopyWebpackPlugin {
         fromPath = path.resolve(context, fromPath)
         toPath = path.resolve(context, toPath)
 
-        // is file
-        if (!fs.statSync(fromPath).isDirectory()) {
+        if (!fs.existsSync(fromPath)) { // not exists
+          logger.warn(`${LANG.NOT_EXISTS}: ${path.relative(logBasePath, fromPath)}`)
+        } else if (!fs.statSync(fromPath).isDirectory()) { // is file
           await assetsFile({
             src: fromPath,
             dist: toPath,

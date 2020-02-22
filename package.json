@@ -1,6 +1,6 @@
 {
   "name": "yyl-copy-webpack-plugin",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "engines": {
     "node": ">= 8.0.0"
   },

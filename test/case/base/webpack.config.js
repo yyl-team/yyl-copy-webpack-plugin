@@ -48,6 +48,11 @@ const iPluginOption = {
     to: 'dist/assets/source',
     matcher: ['!*.html', '!**/.*'],
     filename: '[name]-[hash:8].[ext]'
+  }, {
+    from: 'src/abc',
+    to: 'dist/assets/source',
+    matcher: ['!*.html', '!**/.*'],
+    filename: '[name]-[hash:8].[ext]'
   }],
   minify: true,
   logBasePath: __dirname,
