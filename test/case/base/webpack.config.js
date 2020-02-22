@@ -39,8 +39,8 @@ const config = {
 // + plugin options
 const iPluginOption = {
   files: [{
-    from: 'src/source',
-    to: 'dist/assets/source',
+    from: 'src/source/html/demo.html',
+    to: 'dist/assets/source/html/demo.html',
     matcher: ['*.html', '!**/.*'],
     filename: '[name].[ext]'
   }, {

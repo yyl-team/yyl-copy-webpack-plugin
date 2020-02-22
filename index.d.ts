@@ -25,6 +25,8 @@ interface YylCopyWebpackOption {
   basePath?: string
   /** 是否压缩 */
   minify?: boolean
+  /** 压缩是否支持 ie8 默认 false */
+  ie8?: boolean
   /** log 路径的 相对路径 */
   logBasePath?: string
 }

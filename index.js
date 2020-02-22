@@ -6,7 +6,7 @@ const matcher = require('matcher')
 const createHash = require('crypto').createHash
 const { getHooks } = require('./lib/hooks')
 const CleanCss = require('clean-css')
-const UglifyJs = require('uglify-js')
+const Terser = require('terser')
 
 const LANG = require('./lang/index')
 
@@ -25,7 +25,7 @@ class YylCopyWebpackPlugin {
     return PLUGIN_NAME
   }
   constructor(op) {
-    const { files, minify, logBasePath, basePath } = op
+    const { files, minify, logBasePath, basePath, ie8 } = op
     this.option = {
       files: files ? files.map((info) => {
         info.filename = info.filename || '[name]-[hash:8].[ext]'
@@ -33,6 +33,7 @@ class YylCopyWebpackPlugin {
       }) : [],
       minify: minify || false,
       basePath,
+      ie8,
       logBasePath: logBasePath || process.cwd()
     }
   }
@@ -71,14 +72,16 @@ class YylCopyWebpackPlugin {
     return util.path.join(dirname, r)
   }
   formatSource(fileInfo) {
-    const { minify } = this.option
+    const { minify, ie8 } = this.option
 
     if (minify) {
       const r = Object.assign({}, fileInfo)
       let minifyResult
       switch (path.extname(fileInfo.src)) {
         case '.js':
-          minifyResult = UglifyJs.minify(r.source.toString())
+          minifyResult = Terser.minify(r.source.toString(), {
+            ie8
+          })
           if (minifyResult.error) {
             return printError(minifyResult.error)
           }
@@ -104,18 +107,54 @@ class YylCopyWebpackPlugin {
   }
   apply(compiler) {
     const { output, context } = compiler.options
-    const { basePath, logBasePath, files } = this.option
+    const { basePath, logBasePath, files, ie8, minify } = this.option
 
     if (!files || !files.length) {
       return
     }
 
     compiler.hooks.emit.tapAsync(PLUGIN_NAME, async (compilation, done) => {
+
+      /** 文件写入操作 */
+      const assetsFile = async (fileInfo, filename) => {
+        // + hooks.beforeCopy
+        fileInfo = await iHooks.beforeCopy.promise(fileInfo)
+        // - hooks.beforeCopy
+
+        fileInfo = this.formatSource(fileInfo)
+
+        // + hooks.afterCopy
+        fileInfo = await iHooks.afterCopy.promise(fileInfo)
+        // - hooks.afterCopy
+
+        const assetName = util.path.relative(output.path, fileInfo.dist)
+
+        // add watch
+        compilation.fileDependencies.add(fileInfo.src)
+
+
+        const finalName = this.getFileName(assetName, fileInfo.source, filename)
+
+        logger.info(`${finalName} <- [${path.relative(logBasePath, fileInfo.src)}]`)
+        compilation.assets[finalName] = {
+          source() {
+            return fileInfo.source
+          },
+          size() {
+            return fileInfo.source.length
+          }
+        }
+        compilation.hooks.moduleAsset.call({
+          userRequest: assetName
+        }, finalName)
+      }
       // + copy
       const iHooks = getHooks(compilation)
       const logger = compilation.getLogger(PLUGIN_NAME)
       logger.group(PLUGIN_NAME)
-      logger.info(LANG.COPY_INFO)
+      logger.info(`${LANG.MINIFY_INFO}: ${minify || 'false'}`)
+      logger.info(`${LANG.IE8_INFO}: ${ie8 || 'false'}`)
+      logger.info(`${LANG.COPY_INFO}:`)
       await util.forEach(files, async (copyInfo) => {
         let fromPath = copyInfo.from
         let toPath = copyInfo.to
@@ -126,55 +165,31 @@ class YylCopyWebpackPlugin {
         fromPath = path.resolve(context, fromPath)
         toPath = path.resolve(context, toPath)
 
-        let iFiles = extFs.readFilesSync(fromPath)
-        if (copyInfo.matcher) {
-          iFiles = matcher(iFiles, copyInfo.matcher)
+        // is file
+        if (!fs.statSync(fromPath).isDirectory()) {
+          await assetsFile({
+            src: fromPath,
+            dist: toPath,
+            source: fs.readFileSync(fromPath)
+          }, copyInfo.filename)
+        } else { // is directory
+          let iFiles = extFs.readFilesSync(fromPath)
+          if (copyInfo.matcher) {
+            iFiles = matcher(iFiles, copyInfo.matcher)
+          }
+
+          await util.forEach(iFiles, async (iFile) => {
+            const outputPath = util.path.join(
+              toPath,
+              path.relative(fromPath, iFile)
+            )
+            await assetsFile({
+              src: iFile,
+              dist: outputPath,
+              source: fs.readFileSync(iFile)
+            }, copyInfo.filename)
+          })
         }
-
-        const copyMap = {}
-        await util.forEach(iFiles, async (iFile) => {
-          const outputPath = util.path.join(
-            toPath,
-            path.relative(fromPath, iFile)
-          )
-          const assetName = util.path.relative(output.path, outputPath)
-
-          let fileInfo = {
-            src: iFile,
-            dist: outputPath,
-            source: fs.readFileSync(iFile)
-          }
-
-          // + hooks.beforeCopy
-          fileInfo = await iHooks.beforeCopy.promise(fileInfo)
-          // - hooks.beforeCopy
-
-          fileInfo = this.formatSource(fileInfo)
-
-          // + hooks.afterCopy
-          fileInfo = await iHooks.afterCopy.promise(fileInfo)
-          // - hooks.afterCopy
-
-          // add watch
-          compilation.fileDependencies.add(fileInfo.src)
-
-
-          const finalName = this.getFileName(assetName, fileInfo.source, copyInfo.filename)
-          copyMap[finalName] = fileInfo.source
-
-          logger.info(`${finalName} <- [${path.relative(logBasePath, iFile)}]`)
-          compilation.assets[finalName] = {
-            source() {
-              return copyMap[finalName]
-            },
-            size() {
-              return copyMap[finalName].length
-            }
-          }
-          compilation.hooks.moduleAsset.call({
-            userRequest: assetName
-          }, finalName)
-        })
       })
       // - copy
 
