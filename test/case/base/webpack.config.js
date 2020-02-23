@@ -44,12 +44,12 @@ const iPluginOption = {
     matcher: ['*.html', '!**/.*'],
     filename: '[name].[ext]'
   }, {
-    from: 'src/source',
+    from: 'src/abc',
     to: 'dist/assets/source',
     matcher: ['!*.html', '!**/.*'],
     filename: '[name]-[hash:8].[ext]'
   }, {
-    from: 'src/abc',
+    from: 'src/source',
     to: 'dist/assets/source',
     matcher: ['!*.html', '!**/.*'],
     filename: '[name]-[hash:8].[ext]'
