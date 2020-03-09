@@ -7,6 +7,7 @@ const createHash = require('crypto').createHash
 const { getHooks } = require('./lib/hooks')
 const CleanCss = require('clean-css')
 const Terser = require('terser')
+const chalk = require('chalk')
 
 const LANG = require('./lang/index')
 
@@ -134,7 +135,7 @@ class YylCopyWebpackPlugin {
 
         const finalName = this.getFileName(assetName, fileInfo.source, filename)
 
-        logger.info(`${finalName} <- [${path.relative(logBasePath, fileInfo.src)}]`)
+        logger.info(`${chalk.cyan(finalName)} <- [${chalk.green(path.relative(logBasePath, fileInfo.src))}]`)
         compilation.assets[finalName] = {
           source() {
             return fileInfo.source
@@ -165,7 +166,7 @@ class YylCopyWebpackPlugin {
         toPath = path.resolve(context, toPath)
 
         if (!fs.existsSync(fromPath)) { // not exists
-          logger.warn(`${path.relative(logBasePath, toPath)} <- [${path.relative(logBasePath, fromPath)}] ${LANG.NOT_EXISTS}`)
+          logger.warn(chalk.yellow(`${path.relative(logBasePath, toPath)} <- [${path.relative(logBasePath, fromPath)}] ${LANG.NOT_EXISTS}`))
         } else if (!fs.statSync(fromPath).isDirectory()) { // is file
           await assetsFile({
             src: fromPath,

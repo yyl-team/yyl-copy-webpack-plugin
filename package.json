@@ -1,6 +1,6 @@
 {
   "name": "yyl-copy-webpack-plugin",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "engines": {
     "node": ">= 8.0.0"
   },
@@ -25,6 +25,7 @@
     "yyl-util": "^2.3.7"
   },
   "dependencies": {
+    "chalk": "^3.0.0",
     "clean-css": "4.2.1",
     "matcher": "2.0.0",
     "tapable": "1.1.3",
