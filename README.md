@@ -3,6 +3,7 @@
 过滤规则使用 [https://www.npmjs.com/package/matcher](matcher) 插件
 
 ## USAGE
+
 ```javascript
 const YylCopyWebpackPlugin = require('yyl-copy-webpack-plugin')
 
@@ -10,15 +11,18 @@ const wConfig = {
   plugins: [
     new YylCopyWebpackPlugin({
       /** 拷贝信息 */
-      files: [{
-        from: 'src/source',
-        to: 'dist/assets/source',
-        matcher: ['*.html', '!**/.*']
-      }, {
-        from: 'src/source',
-        to: 'dist/assets/source',
-        matcher: ['!*.html', '!**/.*']
-      }],
+      files: [
+        {
+          from: 'src/source',
+          to: 'dist/assets/source',
+          matcher: ['*.html', '!**/.*']
+        },
+        {
+          from: 'src/source',
+          to: 'dist/assets/source',
+          matcher: ['!*.html', '!**/.*']
+        }
+      ],
       /** 文件名 默认为 [name]-[hash:8].[ext] */
       filename: '[name]-[hash:8].[ext]',
       /** 是否压缩 */
@@ -33,6 +37,7 @@ const wConfig = {
 ```
 
 ## hooks
+
 ```javascript
 let YylCopyWebpackPlugin
 try {
@@ -45,7 +50,7 @@ try {
 
 const PLUGIN_NAME = 'your_plugin'
 class ExtPlugin {
-  apply (compiler) {
+  apply(compiler) {
     const IPlugin = YylCopyWebpackPlugin
     if (IPlugin) {
       compiler.hooks.compilation.tap(IPlugin.getName(), (compilation) => {
@@ -64,18 +69,19 @@ class ExtPlugin {
 ```
 
 ## ts
+
 ```typescript
 import { AsyncSeriesWaterfallHook } from 'tapable'
 
 interface Hooks {
   beforeCopy: AsyncSeriesWaterfallHook<{
-    src: string,
-    dist: string,
+    src: string
+    dist: string
     source: string
   }>
   afterCopy: AsyncSeriesWaterfallHook<{
-    src: string,
-    dist: string,
+    src: string
+    dist: string
     source: string
   }>
 }
@@ -106,5 +112,5 @@ interface CopyInfo {
   /** 沿用 matcher 规则 */
   matcher?: string[]
 }
-export = YylCopyWebpackPlugin 
+export = YylCopyWebpackPlugin
 ```

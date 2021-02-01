@@ -4,7 +4,7 @@ const util = require('yyl-util')
 
 const PLUGIN_NAME = 'check_plugin'
 class ExtPlugin {
-  apply (compiler) {
+  apply(compiler) {
     compiler.hooks.compilation.tap(IPlugin.getName(), (compilation) => {
       IPlugin.getHooks(compilation).beforeCopy.tapAsync(PLUGIN_NAME, async (obj, done) => {
         await util.waitFor(10)
