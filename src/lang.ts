@@ -1,4 +1,4 @@
-module.exports = {
+export const LANG = {
   NOT_EXISTS: '复制失败，原文件不存在',
   COPY_INFO: '复制信息',
   MINIFY_INFO: '是否压缩',

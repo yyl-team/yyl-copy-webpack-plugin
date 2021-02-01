@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const IPlugin = require('../../../index')
+const IPlugin = require('../../../')
 const util = require('yyl-util')
 
 const PLUGIN_NAME = 'check_plugin'
