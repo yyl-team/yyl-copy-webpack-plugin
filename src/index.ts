@@ -10,6 +10,11 @@ import chalk from 'chalk'
 import { getHooks } from './hooks'
 import { LANG } from './lang'
 import { Compilation, Compiler } from 'webpack'
+import {
+  AssetsInfo,
+  YylWebpackPluginBaseOption,
+  YylWebpackPluginBase
+} from 'yyl-webpack-plugin-base'
 
 const PLUGIN_NAME = 'yylCopy'
 const printError = function (err: Error) {
@@ -25,11 +30,7 @@ export interface AssetsSource {
   buffer(): Buffer
 }
 
-export interface FileInfo {
-  src: string
-  dist: string
-  source: Buffer
-}
+export type FileInfo = Required<AssetsInfo>
 
 export interface CopyInfo {
   /** 原地址 */
@@ -42,20 +43,18 @@ export interface CopyInfo {
   filename?: string
 }
 
-export interface YylCopyWebpackPluginOption {
+export interface YylCopyWebpackPluginOption extends Pick<YylWebpackPluginBaseOption, 'context'> {
   /** 拷贝信息 */
   files?: CopyInfo[]
-  /** 基本路径, 会用于 resolve files 里面的路径 */
-  basePath?: string
   /** 是否压缩 */
   minify?: boolean
   /** 压缩是否支持 ie8 默认 false */
   ie8?: boolean
   /** log 路径的 相对路径 */
-  logBasePath?: string
+  logContext?: string
 }
 
-export default class YylCopyWebpackPlugin {
+export default class YylCopyWebpackPlugin extends YylWebpackPluginBase {
   static getHooks(compilation: Compilation) {
     return getHooks(compilation)
   }
@@ -66,13 +65,17 @@ export default class YylCopyWebpackPlugin {
 
   option: Required<YylCopyWebpackPluginOption> = {
     files: [],
-    basePath: process.cwd(),
+    context: process.cwd(),
     minify: false,
     ie8: false,
-    logBasePath: process.cwd()
+    logContext: process.cwd()
   }
 
   constructor(option?: YylCopyWebpackPluginOption) {
+    super({
+      ...option,
+      name: PLUGIN_NAME
+    })
     if (option?.files) {
       this.option.files = option.files.map((info) => {
         info.filename = info.filename || '[name]-[hash:8].[ext]'
@@ -84,10 +87,9 @@ export default class YylCopyWebpackPlugin {
       this.option.minify = option.minify
     }
 
-    if (option?.basePath) {
-      this.option.basePath = option.basePath
-      if (!option.logBasePath) {
-        this.option.logBasePath = option.basePath
+    if (option?.context) {
+      if (!option.logContext) {
+        this.option.logContext = option.context
       }
     }
 
@@ -95,44 +97,9 @@ export default class YylCopyWebpackPlugin {
       this.option.ie8 = option.ie8
     }
 
-    if (option?.logBasePath) {
-      this.option.logBasePath = option.logBasePath
+    if (option?.logContext) {
+      this.option.logContext = option.logContext
     }
-  }
-
-  getFileType(str: string) {
-    const iStr = str.replace(/\?.*/, '')
-    const split = str.split('.')
-    let ext = split[split.length - 1]
-    if (ext === 'map' && split.length > 2) {
-      ext = `${split[split.length - 2]}.${split[split.length - 1]}`
-    }
-
-    return ext
-  }
-
-  getFileName(name: string, cnt: Buffer, filename: string) {
-    const REG_HASH = /\[hash:(\d+)\]/g
-    const REG_NAME = /\[name\]/g
-    const REG_EXT = /\[ext\]/g
-
-    const dirname = path.dirname(name)
-    const basename = path.basename(name)
-    const ext = path.extname(basename).replace(/^\./, '')
-    const iName = basename.slice(0, basename.length - (ext.length > 0 ? ext.length + 1 : 0))
-
-    let hash = ''
-    if (filename.match(REG_HASH)) {
-      let hashLen = 0
-      filename.replace(REG_HASH, (str, $1) => {
-        hashLen = +$1
-        hash = createHash('md5').update(cnt.toString()).digest('hex').slice(0, hashLen)
-        return str
-      })
-    }
-    const r = filename.replace(REG_HASH, hash).replace(REG_NAME, iName).replace(REG_EXT, ext)
-
-    return util.path.join(dirname, r)
   }
 
   async formatSource(fileInfo: FileInfo): Promise<FileInfo> {
@@ -171,116 +138,110 @@ export default class YylCopyWebpackPlugin {
     }
   }
 
-  apply(compiler: Compiler) {
+  async apply(compiler: Compiler) {
     const { output, context } = compiler.options
-    const { basePath, logBasePath, files, ie8, minify } = this.option
+    const { logContext, files, ie8, minify } = this.option
 
     if (!files || !files.length) {
       return
     }
 
-    compiler.hooks.emit.tapAsync(PLUGIN_NAME, async (compilation, done) => {
-      const iHooks = getHooks(compilation)
-      const logger = compilation.getLogger(PLUGIN_NAME)
-      /** 文件写入操作 */
-      const assetsFile = async (fileInfo: FileInfo, filename: string) => {
-        // + hooks.beforeCopy
-        fileInfo = await iHooks.beforeCopy.promise(fileInfo)
-        // - hooks.beforeCopy
+    const { compilation, done } = await this.initCompilation(compiler)
 
-        fileInfo = await this.formatSource(fileInfo)
+    const iHooks = getHooks(compilation)
+    const logger = compilation.getLogger(PLUGIN_NAME)
+    /** 文件写入操作 */
+    const assetsFile = async (fileInfo: FileInfo, filename: string) => {
+      // + hooks.beforeCopy
+      fileInfo = await iHooks.beforeCopy.promise(fileInfo)
+      // - hooks.beforeCopy
 
-        // + hooks.afterCopy
-        fileInfo = await iHooks.afterCopy.promise(fileInfo)
-        // - hooks.afterCopy
+      fileInfo = await this.formatSource(fileInfo)
 
-        const assetName = util.path.relative(output.path || '', fileInfo.dist)
+      // + hooks.afterCopy
+      fileInfo = await iHooks.afterCopy.promise(fileInfo)
+      // - hooks.afterCopy
 
-        // add watch
-        compilation.fileDependencies.add(fileInfo.src)
+      const assetName = util.path.relative(output.path || '', fileInfo.dist)
 
-        const finalName = this.getFileName(assetName, fileInfo.source, filename)
+      // add watch
+      compilation.fileDependencies.add(fileInfo.src)
 
-        logger.info(
-          `${chalk.cyan(finalName)} <- [${chalk.green(path.relative(logBasePath, fileInfo.src))}]`
-        )
-        compilation.assets[finalName] = {
-          source() {
-            return fileInfo.source
-          },
-          size() {
-            return fileInfo.source.length
-          }
-        } as AssetsSource
-        compilation.hooks.moduleAsset.call(
-          {
-            userRequest: assetName
-          } as any,
-          finalName
-        )
+      const finalName = this.getFileName(assetName, fileInfo.source, filename)
+
+      logger.info(
+        `${chalk.cyan(finalName)} <- [${chalk.green(path.relative(logContext, fileInfo.src))}]`
+      )
+      this.updateAssets({
+        compilation,
+        assetsInfo: {
+          dist: finalName,
+          src: assetName,
+          source: fileInfo.source
+        }
+      })
+    }
+
+    logger.group(PLUGIN_NAME)
+    logger.info(`${LANG.MINIFY_INFO}: ${minify || 'false'}`)
+    logger.info(`${LANG.IE8_INFO}: ${ie8 || 'false'}`)
+    logger.info(`${LANG.COPY_INFO}:`)
+
+    await util.forEach<CopyInfo>(files, async (copyInfo) => {
+      let fromPath = copyInfo.from
+      let toPath = copyInfo.to
+      if (this.option.context) {
+        fromPath = path.resolve(this.option.context, fromPath)
+        toPath = path.resolve(this.option.context, toPath)
+      }
+      if (context) {
+        fromPath = path.resolve(context, fromPath)
+        toPath = path.resolve(context, toPath)
       }
 
-      logger.group(PLUGIN_NAME)
-      logger.info(`${LANG.MINIFY_INFO}: ${minify || 'false'}`)
-      logger.info(`${LANG.IE8_INFO}: ${ie8 || 'false'}`)
-      logger.info(`${LANG.COPY_INFO}:`)
-
-      await util.forEach<CopyInfo>(files, async (copyInfo) => {
-        let fromPath = copyInfo.from
-        let toPath = copyInfo.to
-        if (basePath) {
-          fromPath = path.resolve(basePath, fromPath)
-          toPath = path.resolve(basePath, toPath)
-        }
-        if (context) {
-          fromPath = path.resolve(context, fromPath)
-          toPath = path.resolve(context, toPath)
-        }
-
-        if (!fs.existsSync(fromPath)) {
-          // not exists
-          logger.warn(
-            chalk.yellow(
-              `${path.relative(logBasePath, toPath)} <- [${path.relative(logBasePath, fromPath)}] ${
-                LANG.NOT_EXISTS
-              }`
-            )
+      if (!fs.existsSync(fromPath)) {
+        // not exists
+        logger.warn(
+          chalk.yellow(
+            `${path.relative(logContext, toPath)} <- [${path.relative(logContext, fromPath)}] ${
+              LANG.NOT_EXISTS
+            }`
           )
-        } else if (!fs.statSync(fromPath).isDirectory()) {
-          // is file
+        )
+      } else if (!fs.statSync(fromPath).isDirectory()) {
+        // is file
+        await assetsFile(
+          {
+            src: fromPath,
+            dist: toPath,
+            source: fs.readFileSync(fromPath)
+          },
+          copyInfo.filename || ''
+        )
+      } else {
+        // is directory
+        let iFiles = extFs.readFilesSync(fromPath)
+        if (copyInfo.matcher) {
+          iFiles = matcher(iFiles, copyInfo.matcher)
+        }
+
+        await util.forEach(iFiles, async (iFile) => {
+          const outputPath = util.path.join(toPath, path.relative(fromPath, iFile))
           await assetsFile(
             {
-              src: fromPath,
-              dist: toPath,
-              source: fs.readFileSync(fromPath)
+              src: iFile,
+              dist: outputPath,
+              source: fs.readFileSync(iFile)
             },
             copyInfo.filename || ''
           )
-        } else {
-          // is directory
-          let iFiles = extFs.readFilesSync(fromPath)
-          if (copyInfo.matcher) {
-            iFiles = matcher(iFiles, copyInfo.matcher)
-          }
-
-          await util.forEach(iFiles, async (iFile) => {
-            const outputPath = util.path.join(toPath, path.relative(fromPath, iFile))
-            await assetsFile(
-              {
-                src: iFile,
-                dist: outputPath,
-                source: fs.readFileSync(iFile)
-              },
-              copyInfo.filename || ''
-            )
-          })
-        }
-      })
-      // - copy
-
-      logger.groupEnd()
-      done()
+        })
+      }
     })
+    // - copy
+
+    logger.groupEnd()
+    done()
   }
 }
 
