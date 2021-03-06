@@ -25,7 +25,7 @@
 
 **Returns:** *Buffer*
 
-Defined in: [src/index.ts:29](https://github.com/jackness1208/yyl-copy-webpack-plugin/blob/e7d063a/src/index.ts#L29)
+Defined in: src/index.ts:29
 
 ___
 
@@ -41,7 +41,7 @@ Name | Type |
 
 **Returns:** Object
 
-Defined in: [src/index.ts:25](https://github.com/jackness1208/yyl-copy-webpack-plugin/blob/e7d063a/src/index.ts#L25)
+Defined in: src/index.ts:25
 
 ___
 
@@ -51,7 +51,7 @@ ___
 
 **Returns:** *number*
 
-Defined in: [src/index.ts:24](https://github.com/jackness1208/yyl-copy-webpack-plugin/blob/e7d063a/src/index.ts#L24)
+Defined in: src/index.ts:24
 
 ___
 
@@ -61,7 +61,7 @@ ___
 
 **Returns:** *string* \| *Buffer*
 
-Defined in: [src/index.ts:28](https://github.com/jackness1208/yyl-copy-webpack-plugin/blob/e7d063a/src/index.ts#L28)
+Defined in: src/index.ts:28
 
 ___
 
@@ -82,7 +82,7 @@ Name | Type |
 `map` | Object |
 `source` | *string* \| *Buffer* |
 
-Defined in: [src/index.ts:26](https://github.com/jackness1208/yyl-copy-webpack-plugin/blob/e7d063a/src/index.ts#L26)
+Defined in: src/index.ts:26
 
 ___
 
@@ -98,4 +98,4 @@ Name | Type |
 
 **Returns:** *void*
 
-Defined in: [src/index.ts:27](https://github.com/jackness1208/yyl-copy-webpack-plugin/blob/e7d063a/src/index.ts#L27)
+Defined in: src/index.ts:27

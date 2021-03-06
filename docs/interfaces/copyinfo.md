@@ -23,7 +23,7 @@
 
 文件名 默认为 [name]-[hash:8].[ext]
 
-Defined in: [src/index.ts:42](https://github.com/jackness1208/yyl-copy-webpack-plugin/blob/e7d063a/src/index.ts#L42)
+Defined in: src/index.ts:42
 
 ___
 
@@ -33,7 +33,7 @@ ___
 
 原地址
 
-Defined in: [src/index.ts:36](https://github.com/jackness1208/yyl-copy-webpack-plugin/blob/e7d063a/src/index.ts#L36)
+Defined in: src/index.ts:36
 
 ___
 
@@ -43,7 +43,7 @@ ___
 
 沿用 matcher 规则
 
-Defined in: [src/index.ts:40](https://github.com/jackness1208/yyl-copy-webpack-plugin/blob/e7d063a/src/index.ts#L40)
+Defined in: src/index.ts:40
 
 ___
 
@@ -53,4 +53,4 @@ ___
 
 目标地址
 
-Defined in: [src/index.ts:38](https://github.com/jackness1208/yyl-copy-webpack-plugin/blob/e7d063a/src/index.ts#L38)
+Defined in: src/index.ts:38
