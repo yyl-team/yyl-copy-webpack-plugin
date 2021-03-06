@@ -1,5 +1,5 @@
 /*!
- * yyl-copy-webpack-plugin cjs 1.0.2
+ * yyl-copy-webpack-plugin cjs 1.0.7
  * (c) 2020 - 2021 
  * Released under the MIT License.
  */
@@ -161,78 +161,89 @@ class YylCopyWebpackPlugin extends yylWebpackPluginBase.YylWebpackPluginBase {
             if (!files || !files.length) {
                 return;
             }
-            const { compilation, done } = yield this.initCompilation(compiler);
-            const iHooks = getHooks(compilation);
-            const logger = compilation.getLogger(PLUGIN_NAME);
-            /** 文件写入操作 */
-            const assetsFile = (fileInfo, filename) => __awaiter(this, void 0, void 0, function* () {
-                // + hooks.beforeCopy
-                fileInfo = yield iHooks.beforeCopy.promise(fileInfo);
-                // - hooks.beforeCopy
-                fileInfo = yield this.formatSource(fileInfo);
-                // + hooks.afterCopy
-                fileInfo = yield iHooks.afterCopy.promise(fileInfo);
-                // - hooks.afterCopy
-                const assetName = util__default['default'].path.relative(output.path || '', fileInfo.dist);
-                // add watch
-                compilation.fileDependencies.add(fileInfo.src);
-                const finalName = this.getFileName(assetName, fileInfo.source, filename);
-                logger.info(`${chalk__default['default'].cyan(finalName)} <- [${chalk__default['default'].green(path__default['default'].relative(logContext, fileInfo.src))}]`);
-                this.updateAssets({
-                    compilation,
-                    assetsInfo: {
-                        dist: finalName,
-                        src: assetName,
-                        source: fileInfo.source
-                    }
-                });
-            });
-            logger.group(PLUGIN_NAME);
-            logger.info(`${LANG.MINIFY_INFO}: ${minify || 'false'}`);
-            logger.info(`${LANG.IE8_INFO}: ${ie8 || 'false'}`);
-            logger.info(`${LANG.COPY_INFO}:`);
-            yield util__default['default'].forEach(files, (copyInfo) => __awaiter(this, void 0, void 0, function* () {
-                let fromPath = copyInfo.from;
-                let toPath = copyInfo.to;
-                if (this.option.context) {
-                    fromPath = path__default['default'].resolve(this.option.context, fromPath);
-                    toPath = path__default['default'].resolve(this.option.context, toPath);
-                }
-                if (context) {
-                    fromPath = path__default['default'].resolve(context, fromPath);
-                    toPath = path__default['default'].resolve(context, toPath);
-                }
-                if (!fs__default['default'].existsSync(fromPath)) {
-                    // not exists
-                    logger.warn(chalk__default['default'].yellow(`${path__default['default'].relative(logContext, toPath)} <- [${path__default['default'].relative(logContext, fromPath)}] ${LANG.NOT_EXISTS}`));
-                }
-                else if (!fs__default['default'].statSync(fromPath).isDirectory()) {
-                    // is file
-                    yield assetsFile({
-                        src: fromPath,
-                        dist: toPath,
-                        source: fs__default['default'].readFileSync(fromPath)
-                    }, copyInfo.filename || '');
-                }
-                else {
-                    // is directory
-                    let iFiles = extFs__default['default'].readFilesSync(fromPath);
-                    if (copyInfo.matcher) {
-                        iFiles = matcher__default['default'](iFiles, copyInfo.matcher);
-                    }
-                    yield util__default['default'].forEach(iFiles, (iFile) => __awaiter(this, void 0, void 0, function* () {
-                        const outputPath = util__default['default'].path.join(toPath, path__default['default'].relative(fromPath, iFile));
-                        yield assetsFile({
-                            src: iFile,
-                            dist: outputPath,
-                            source: fs__default['default'].readFileSync(iFile)
-                        }, copyInfo.filename || '');
+            this.initCompilation({
+                compiler,
+                onProcessAssets: (compilation) => __awaiter(this, void 0, void 0, function* () {
+                    const iHooks = getHooks(compilation);
+                    const logger = compilation.getLogger(PLUGIN_NAME);
+                    /** 文件写入操作 */
+                    const assetsFile = (fileInfo, filename) => __awaiter(this, void 0, void 0, function* () {
+                        // + hooks.beforeCopy
+                        fileInfo = yield iHooks.beforeCopy.promise(fileInfo);
+                        // - hooks.beforeCopy
+                        fileInfo = yield this.formatSource(fileInfo);
+                        // + hooks.afterCopy
+                        fileInfo = yield iHooks.afterCopy.promise(fileInfo);
+                        // - hooks.afterCopy
+                        const assetName = util__default['default'].path.relative(output.path || '', fileInfo.dist);
+                        // add watch
+                        compilation.fileDependencies.add(fileInfo.src);
+                        const finalName = this.getFileName(assetName, fileInfo.source, filename);
+                        logger.info(`${chalk__default['default'].cyan(finalName)} <- [${chalk__default['default'].green(path__default['default'].relative(logContext, fileInfo.src))}]`);
+                        this.updateAssets({
+                            compilation,
+                            assetsInfo: {
+                                dist: finalName,
+                                src: assetName,
+                                source: fileInfo.source
+                            }
+                        });
+                    });
+                    logger.group(PLUGIN_NAME);
+                    logger.info(`${LANG.MINIFY_INFO}: ${minify || 'false'}`);
+                    logger.info(`${LANG.IE8_INFO}: ${ie8 || 'false'}`);
+                    logger.info(`${LANG.COPY_INFO}:`);
+                    yield util__default['default'].forEach(files, (copyInfo) => __awaiter(this, void 0, void 0, function* () {
+                        let fromPath = copyInfo.from;
+                        let toPath = copyInfo.to;
+                        if (this.option.context) {
+                            fromPath = path__default['default'].resolve(this.option.context, fromPath);
+                            toPath = path__default['default'].resolve(this.option.context, toPath);
+                        }
+                        if (context) {
+                            fromPath = path__default['default'].resolve(context, fromPath);
+                            toPath = path__default['default'].resolve(context, toPath);
+                        }
+                        if (!fs__default['default'].existsSync(fromPath)) {
+                            // not exists
+                            logger.warn(chalk__default['default'].yellow(`${path__default['default'].relative(logContext, toPath)} <- [${path__default['default'].relative(logContext, fromPath)}] ${LANG.NOT_EXISTS}`));
+                        }
+                        else if (!fs__default['default'].statSync(fromPath).isDirectory()) {
+                            // is file
+                            yield assetsFile({
+                                src: fromPath,
+                                dist: toPath,
+                                source: fs__default['default'].readFileSync(fromPath)
+                            }, copyInfo.filename || '');
+                            this.addDependencies({
+                                compilation,
+                                srcs: [fromPath]
+                            });
+                        }
+                        else {
+                            // is directory
+                            let iFiles = extFs__default['default'].readFilesSync(fromPath);
+                            if (copyInfo.matcher) {
+                                iFiles = matcher__default['default'](iFiles, copyInfo.matcher);
+                            }
+                            this.addDependencies({
+                                compilation,
+                                srcs: iFiles
+                            });
+                            yield util__default['default'].forEach(iFiles, (iFile) => __awaiter(this, void 0, void 0, function* () {
+                                const outputPath = util__default['default'].path.join(toPath, path__default['default'].relative(fromPath, iFile));
+                                yield assetsFile({
+                                    src: iFile,
+                                    dist: outputPath,
+                                    source: fs__default['default'].readFileSync(iFile)
+                                }, copyInfo.filename || '');
+                            }));
+                        }
                     }));
-                }
-            }));
-            // - copy
-            logger.groupEnd();
-            done();
+                    // - copy
+                    logger.groupEnd();
+                })
+            });
         });
     }
 }

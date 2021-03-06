@@ -83,14 +83,17 @@ const wConfig = {
       chunks: 'all'
     })
   ],
+  watchOptions: {
+    aggregateTimeout: 300,
+    poll: true
+  },
   devServer: {
-    contentBase: './dist',
-    compress: true,
+    static: './dist',
+    liveReload: true,
     port: 5000,
-    writeToDisk: true,
-    async after() {
-      await extOs.openBrowser('http://127.0.0.1:5000/html/')
-    }
+    open: true,
+    hot: true,
+    openPage: 'http://127.0.0.1:5000/html/'
   }
 }
 

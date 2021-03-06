@@ -1,5 +1,23 @@
 # 历史版本
 
+## 1.0.7 (2021-03-07)
+
+- feat: 更新 `yyl-webpack-plugin-base@0.2.1`
+
+## 1.0.6 (2021-03-04)
+
+- feat: 更新 `yyl-webpack-plugin-base@0.1.7`
+
+## 1.0.4 (2021-02-04)
+
+- feat: 更新 `yyl-webpack-plugin-base@0.1.6`
+
+## 1.0.3 (2021-02-04)
+
+- feat: 更新 `yyl-webpack-plugin-base@0.1.5`
+- feat: 优化 log
+- feat: 补充 docs
+
 ## 1.0.1 (2021-02-04)
 
 - feat: 更新 `yyl-webpack-plugin-base@0.1.2`
