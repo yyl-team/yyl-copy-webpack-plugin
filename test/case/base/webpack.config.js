@@ -92,6 +92,7 @@ const wConfig = {
     liveReload: true,
     port: 5000,
     open: true,
+    hot: true,
     openPage: 'http://127.0.0.1:5000/html/'
   }
 }

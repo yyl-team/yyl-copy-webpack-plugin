@@ -217,7 +217,6 @@ export default class YylCopyWebpackPlugin extends YylWebpackPluginBase {
           },
           copyInfo.filename || ''
         )
-        console.log('add', fromPath)
         this.addDependencies({
           compilation,
           srcs: [fromPath]
@@ -229,7 +228,6 @@ export default class YylCopyWebpackPlugin extends YylWebpackPluginBase {
           iFiles = matcher(iFiles, copyInfo.matcher)
         }
 
-        console.log('add', iFiles)
         this.addDependencies({
           compilation,
           srcs: iFiles
