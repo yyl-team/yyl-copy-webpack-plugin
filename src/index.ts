@@ -145,111 +145,113 @@ export default class YylCopyWebpackPlugin extends YylWebpackPluginBase {
       return
     }
 
-    const { compilation, done } = await this.initCompilation(compiler)
+    this.initCompilation({
+      compiler,
+      onProcessAssets: async (compilation) => {
+        const iHooks = getHooks(compilation)
+        const logger = compilation.getLogger(PLUGIN_NAME)
+        /** 文件写入操作 */
+        const assetsFile = async (fileInfo: FileInfo, filename: string) => {
+          // + hooks.beforeCopy
+          fileInfo = await iHooks.beforeCopy.promise(fileInfo)
+          // - hooks.beforeCopy
 
-    const iHooks = getHooks(compilation)
-    const logger = compilation.getLogger(PLUGIN_NAME)
-    /** 文件写入操作 */
-    const assetsFile = async (fileInfo: FileInfo, filename: string) => {
-      // + hooks.beforeCopy
-      fileInfo = await iHooks.beforeCopy.promise(fileInfo)
-      // - hooks.beforeCopy
+          fileInfo = await this.formatSource(fileInfo)
 
-      fileInfo = await this.formatSource(fileInfo)
+          // + hooks.afterCopy
+          fileInfo = await iHooks.afterCopy.promise(fileInfo)
+          // - hooks.afterCopy
 
-      // + hooks.afterCopy
-      fileInfo = await iHooks.afterCopy.promise(fileInfo)
-      // - hooks.afterCopy
+          const assetName = util.path.relative(output.path || '', fileInfo.dist)
 
-      const assetName = util.path.relative(output.path || '', fileInfo.dist)
+          // add watch
+          compilation.fileDependencies.add(fileInfo.src)
 
-      // add watch
-      compilation.fileDependencies.add(fileInfo.src)
+          const finalName = this.getFileName(assetName, fileInfo.source, filename)
 
-      const finalName = this.getFileName(assetName, fileInfo.source, filename)
-
-      logger.info(
-        `${chalk.cyan(finalName)} <- [${chalk.green(path.relative(logContext, fileInfo.src))}]`
-      )
-      this.updateAssets({
-        compilation,
-        assetsInfo: {
-          dist: finalName,
-          src: assetName,
-          source: fileInfo.source
-        }
-      })
-    }
-
-    logger.group(PLUGIN_NAME)
-    logger.info(`${LANG.MINIFY_INFO}: ${minify || 'false'}`)
-    logger.info(`${LANG.IE8_INFO}: ${ie8 || 'false'}`)
-    logger.info(`${LANG.COPY_INFO}:`)
-
-    await util.forEach<CopyInfo>(files, async (copyInfo) => {
-      let fromPath = copyInfo.from
-      let toPath = copyInfo.to
-      if (this.option.context) {
-        fromPath = path.resolve(this.option.context, fromPath)
-        toPath = path.resolve(this.option.context, toPath)
-      }
-      if (context) {
-        fromPath = path.resolve(context, fromPath)
-        toPath = path.resolve(context, toPath)
-      }
-
-      if (!fs.existsSync(fromPath)) {
-        // not exists
-        logger.warn(
-          chalk.yellow(
-            `${path.relative(logContext, toPath)} <- [${path.relative(logContext, fromPath)}] ${
-              LANG.NOT_EXISTS
-            }`
+          logger.info(
+            `${chalk.cyan(finalName)} <- [${chalk.green(path.relative(logContext, fileInfo.src))}]`
           )
-        )
-      } else if (!fs.statSync(fromPath).isDirectory()) {
-        // is file
-        await assetsFile(
-          {
-            src: fromPath,
-            dist: toPath,
-            source: fs.readFileSync(fromPath)
-          },
-          copyInfo.filename || ''
-        )
-        this.addDependencies({
-          compilation,
-          srcs: [fromPath]
-        })
-      } else {
-        // is directory
-        let iFiles = extFs.readFilesSync(fromPath)
-        if (copyInfo.matcher) {
-          iFiles = matcher(iFiles, copyInfo.matcher)
+          this.updateAssets({
+            compilation,
+            assetsInfo: {
+              dist: finalName,
+              src: assetName,
+              source: fileInfo.source
+            }
+          })
         }
 
-        this.addDependencies({
-          compilation,
-          srcs: iFiles
-        })
+        logger.group(PLUGIN_NAME)
+        logger.info(`${LANG.MINIFY_INFO}: ${minify || 'false'}`)
+        logger.info(`${LANG.IE8_INFO}: ${ie8 || 'false'}`)
+        logger.info(`${LANG.COPY_INFO}:`)
 
-        await util.forEach(iFiles, async (iFile) => {
-          const outputPath = util.path.join(toPath, path.relative(fromPath, iFile))
-          await assetsFile(
-            {
-              src: iFile,
-              dist: outputPath,
-              source: fs.readFileSync(iFile)
-            },
-            copyInfo.filename || ''
-          )
+        await util.forEach<CopyInfo>(files, async (copyInfo) => {
+          let fromPath = copyInfo.from
+          let toPath = copyInfo.to
+          if (this.option.context) {
+            fromPath = path.resolve(this.option.context, fromPath)
+            toPath = path.resolve(this.option.context, toPath)
+          }
+          if (context) {
+            fromPath = path.resolve(context, fromPath)
+            toPath = path.resolve(context, toPath)
+          }
+
+          if (!fs.existsSync(fromPath)) {
+            // not exists
+            logger.warn(
+              chalk.yellow(
+                `${path.relative(logContext, toPath)} <- [${path.relative(logContext, fromPath)}] ${
+                  LANG.NOT_EXISTS
+                }`
+              )
+            )
+          } else if (!fs.statSync(fromPath).isDirectory()) {
+            // is file
+            await assetsFile(
+              {
+                src: fromPath,
+                dist: toPath,
+                source: fs.readFileSync(fromPath)
+              },
+              copyInfo.filename || ''
+            )
+            this.addDependencies({
+              compilation,
+              srcs: [fromPath]
+            })
+          } else {
+            // is directory
+            let iFiles = extFs.readFilesSync(fromPath)
+            if (copyInfo.matcher) {
+              iFiles = matcher(iFiles, copyInfo.matcher)
+            }
+
+            this.addDependencies({
+              compilation,
+              srcs: iFiles
+            })
+
+            await util.forEach(iFiles, async (iFile) => {
+              const outputPath = util.path.join(toPath, path.relative(fromPath, iFile))
+              await assetsFile(
+                {
+                  src: iFile,
+                  dist: outputPath,
+                  source: fs.readFileSync(iFile)
+                },
+                copyInfo.filename || ''
+              )
+            })
+          }
         })
+        // - copy
+
+        logger.groupEnd()
       }
     })
-    // - copy
-
-    logger.groupEnd()
-    done()
   }
 }
 
