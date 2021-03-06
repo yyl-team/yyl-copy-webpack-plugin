@@ -217,12 +217,23 @@ export default class YylCopyWebpackPlugin extends YylWebpackPluginBase {
           },
           copyInfo.filename || ''
         )
+        console.log('add', fromPath)
+        this.addDependencies({
+          compilation,
+          srcs: [fromPath]
+        })
       } else {
         // is directory
         let iFiles = extFs.readFilesSync(fromPath)
         if (copyInfo.matcher) {
           iFiles = matcher(iFiles, copyInfo.matcher)
         }
+
+        console.log('add', iFiles)
+        this.addDependencies({
+          compilation,
+          srcs: iFiles
+        })
 
         await util.forEach(iFiles, async (iFile) => {
           const outputPath = util.path.join(toPath, path.relative(fromPath, iFile))

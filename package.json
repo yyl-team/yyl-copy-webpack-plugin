@@ -1,5 +1,5 @@
 {
-  "version": "1.0.6",
+  "version": "1.0.7",
   "name": "yyl-copy-webpack-plugin",
   "main": "output/index.js",
   "module": "output/index.esm.js",
@@ -74,7 +74,7 @@
     "terser": "^5.5.1",
     "yyl-fs": "^0.3.3",
     "yyl-util": "^2.3.9",
-    "yyl-webpack-plugin-base": "^0.1.7"
+    "yyl-webpack-plugin-base": "^0.1.8"
   },
   "repository": "https://github.com/jackness1208/yyl-copy-webpack-plugin.git",
   "author": "liudaojie <liudaojie@yy.com>",

@@ -1,5 +1,5 @@
 /*!
- * yyl-copy-webpack-plugin cjs 1.0.6
+ * yyl-copy-webpack-plugin cjs 1.0.7
  * (c) 2020 - 2021 
  * Released under the MIT License.
  */
@@ -213,6 +213,11 @@ class YylCopyWebpackPlugin extends yylWebpackPluginBase.YylWebpackPluginBase {
                         dist: toPath,
                         source: fs__default['default'].readFileSync(fromPath)
                     }, copyInfo.filename || '');
+                    console.log('add', fromPath);
+                    this.addDependencies({
+                        compilation,
+                        srcs: [fromPath]
+                    });
                 }
                 else {
                     // is directory
@@ -220,6 +225,11 @@ class YylCopyWebpackPlugin extends yylWebpackPluginBase.YylWebpackPluginBase {
                     if (copyInfo.matcher) {
                         iFiles = matcher__default['default'](iFiles, copyInfo.matcher);
                     }
+                    console.log('add', iFiles);
+                    this.addDependencies({
+                        compilation,
+                        srcs: iFiles
+                    });
                     yield util__default['default'].forEach(iFiles, (iFile) => __awaiter(this, void 0, void 0, function* () {
                         const outputPath = util__default['default'].path.join(toPath, path__default['default'].relative(fromPath, iFile));
                         yield assetsFile({
