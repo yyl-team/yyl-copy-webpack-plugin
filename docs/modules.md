@@ -24,4 +24,4 @@
 
 Ƭ **FileInfo**: *Required*<AssetsInfo\>
 
-Defined in: src/index.ts:32
+Defined in: [src/index.ts:32](https://github.com/jackness1208/yyl-copy-webpack-plugin/blob/18ccb5f/src/index.ts#L32)
