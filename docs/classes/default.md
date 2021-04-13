@@ -48,7 +48,7 @@ Name | Type |
 
 **Returns:** [*default*](default.md)
 
-Defined in: src/index.ts:71
+Defined in: [src/index.ts:71](https://github.com/jackness1208/yyl-copy-webpack-plugin/blob/18ccb5f/src/index.ts#L71)
 
 ## Properties
 
@@ -96,7 +96,7 @@ ___
 
 • **option**: *Required*<[*YylCopyWebpackPluginOption*](../interfaces/yylcopywebpackpluginoption.md)\>
 
-Defined in: src/index.ts:65
+Defined in: [src/index.ts:65](https://github.com/jackness1208/yyl-copy-webpack-plugin/blob/18ccb5f/src/index.ts#L65)
 
 ## Methods
 
@@ -130,7 +130,7 @@ Name | Type |
 
 **Returns:** *Promise*<*void*\>
 
-Defined in: src/index.ts:140
+Defined in: [src/index.ts:140](https://github.com/jackness1208/yyl-copy-webpack-plugin/blob/18ccb5f/src/index.ts#L140)
 
 ___
 
@@ -146,7 +146,7 @@ Name | Type |
 
 **Returns:** *Promise*<*Required*<AssetsInfo\>\>
 
-Defined in: src/index.ts:104
+Defined in: [src/index.ts:104](https://github.com/jackness1208/yyl-copy-webpack-plugin/blob/18ccb5f/src/index.ts#L104)
 
 ___
 
@@ -236,7 +236,7 @@ Name | Type |
 
 **Returns:** *any*
 
-Defined in: src/index.ts:57
+Defined in: [src/index.ts:57](https://github.com/jackness1208/yyl-copy-webpack-plugin/blob/18ccb5f/src/index.ts#L57)
 
 ___
 
@@ -246,4 +246,4 @@ ___
 
 **Returns:** *string*
 
-Defined in: src/index.ts:61
+Defined in: [src/index.ts:61](https://github.com/jackness1208/yyl-copy-webpack-plugin/blob/18ccb5f/src/index.ts#L61)

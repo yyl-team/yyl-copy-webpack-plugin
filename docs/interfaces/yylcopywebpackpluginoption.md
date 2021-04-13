@@ -34,7 +34,7 @@ ___
 
 拷贝信息
 
-Defined in: src/index.ts:47
+Defined in: [src/index.ts:47](https://github.com/jackness1208/yyl-copy-webpack-plugin/blob/18ccb5f/src/index.ts#L47)
 
 ___
 
@@ -44,7 +44,7 @@ ___
 
 压缩是否支持 ie8 默认 false
 
-Defined in: src/index.ts:51
+Defined in: [src/index.ts:51](https://github.com/jackness1208/yyl-copy-webpack-plugin/blob/18ccb5f/src/index.ts#L51)
 
 ___
 
@@ -54,7 +54,7 @@ ___
 
 log 路径的 相对路径
 
-Defined in: src/index.ts:53
+Defined in: [src/index.ts:53](https://github.com/jackness1208/yyl-copy-webpack-plugin/blob/18ccb5f/src/index.ts#L53)
 
 ___
 
@@ -64,4 +64,4 @@ ___
 
 是否压缩
 
-Defined in: src/index.ts:49
+Defined in: [src/index.ts:49](https://github.com/jackness1208/yyl-copy-webpack-plugin/blob/18ccb5f/src/index.ts#L49)
